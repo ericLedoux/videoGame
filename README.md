@@ -1,8 +1,8 @@
 # My Video Game!
 My goals in this game are to:
-- economically use the groundwork from my previous game to create something more evolved.
-- learn more introcate parts of python and pygame (concerning game-making primarily).
-- make something that I can be proud of as my first real game!
+- Have a functioning menu system that first shows a main menu that has a start and quit button, and then a level select sub-menu
+- Within the levels, have a grid system that lets me place specific tile classes that do different things
+- Make sprites for the player, animations, background, ect.
   
 ## Description
 The final game's topic and gameplay style are still in question, but I've currently settled on a puzzle-platformer where you walk through one side of the screen and appear on the other like in Pac-Man.  Most likely a small number of levels, somewhere around the 6-10 range ideally.
