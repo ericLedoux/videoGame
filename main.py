@@ -178,7 +178,6 @@ pg.time.set_timer(timer_event, time_delay)
 
 # Creates a group of all sprites that allow us to edit them all at once here rather than editing them one by one
 all_sprites = pg.sprite.Group()
-all_platforms = pg.sprite.Group()
 mobs = pg.sprite.Group()
 all_badguys = pg.sprite.Group()
 
@@ -218,6 +217,7 @@ while running:
                 TIME -= 1
             if TIME == 0:
                 all_sprites.empty()
+                all_badguys.empty()
                 
 ########################################################################################################################
 
@@ -246,7 +246,8 @@ while running:
           draw_text("GAME OVER!", 50, WHITE, WIDTH / 2, HEIGHT / 2)
         # Draws all sprites
     all_sprites.draw(screen)
-      
+    all_badguys.draw(screen)
+
     # This is a buffer that makes it so after the code has drawn everything, the display will be flipped; updated is a better way to put it (think 'flip' as in 'flipbook'). 
     pg.display.flip() # This will flip the displays.
 
