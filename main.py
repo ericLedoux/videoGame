@@ -77,7 +77,7 @@ class Player(Sprite):
     def __init__(self):
         Sprite.__init__(self)
         self.image = pg.Surface((50, 50))
-        self.image.fill(GREEN)
+        self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2) 
         self.pos = vec(WIDTH/2, HEIGHT/2) # Position
@@ -155,13 +155,36 @@ class Mob(Sprite):
 ########################################################################################################################
 
 class DeathBlock(Sprite):
-    def __init__(self):
+    def __init__(self, x, y, color, velocityX, velocityY):
         Sprite.__init__(self)
-        self.image = pg.Surface((75, 75))
-        self.image.fill(RED)
+        self.image = pg.Surface((25,25))
+        self.image.fill(color)
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH/4, HEIGHT/4) 
-        self.pos = vec(WIDTH/3, HEIGHT/4) # Position
+        self.rect.x = x
+        self.rect.y = y
+        self.vel = vec(velocityX, velocityY)
+        self.pos = vec(x, y)
+
+    def update(self):
+        self.rect.x += self.vel.x
+        self.rect.y += self.vel.y
+
+        self.pos.x = self.rect.x
+        self.pos.y = self.rect.y
+
+# Same with player on line 98
+        if self.pos.x > WIDTH:
+            self.pos.x = 0
+        if self.pos.x < 0:
+            self.pos.x = WIDTH
+
+        if self.pos.y > HEIGHT:
+            self.pos.y = 0
+        if self.pos.y < 0:
+            self.pos.y = HEIGHT
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
 
 ########################################################################################################################
 
@@ -185,19 +208,23 @@ all_badguys = pg.sprite.Group()
 
 # Instanciate (instance: an object that belongs to a class) the player and death block
 player = Player()
-db = DeathBlock()
 
 ########################################################################################################################
 
 # Add player to all sprites group
 all_sprites.add(player)
-all_badguys.add(db)
 
-for i in range(50): # This line creates however many mobs we want to make
-    m = Mob(randint(0,WIDTH), randint(0,HEIGHT), (randint(0,255), randint(0,255) , randint(0,255)), randint(-2,2), randint(-2,2)) 
+for i in range(20): # This line creates however many mobs we want to make
+    m = Mob(randint(0,WIDTH), randint(0,HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2)) 
     all_sprites.add(m)
     mobs.add(m)
 print(mobs)
+
+for i in range(10): # This line creates however many mobs we want to make
+    bg = DeathBlock(randint(0,WIDTH), randint(0,HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2)) 
+    all_sprites.add(bg)
+    all_badguys.add(bg)
+print(all_badguys)
 
 ########################################################################################################################
 
@@ -235,6 +262,16 @@ while running:
     if dbhits:
         TIME = 0
     all_sprites.update()
+
+    if mobhits:
+        m = Mob(randint(0,WIDTH), randint(0,HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2)) 
+        all_sprites.add(m)
+        mobs.add(m)
+
+    if dbhits:
+        bg = DeathBlock(randint(0,WIDTH), randint(0,HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2)) 
+        all_sprites.add(bg)
+        all_badguys.add(bg)
 
     ############### Draw ###############
 
