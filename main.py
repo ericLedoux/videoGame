@@ -50,7 +50,7 @@ FPS = 30
 PLAYER_FRIC = -.75
 PLAYER_GRAV = 0
 POINTS = 0
-TIME = 15
+TIME = 60
 
 # Next, we define colors (with RGB values of course).  Also, these colors are global so we write them in all caps.
 WHITE = (255, 255, 255)
@@ -192,7 +192,7 @@ class DeathBlock(Sprite):
 pg.init() # This line means to, in more human terms, intitialize pygame
 pg.mixer.init()
 screen = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("15-Second Dash!") # This makes the tab name whatever you want it to be
+pg.display.set_caption("60-Second Dash!") # This makes the tab name whatever you want it to be
 
 clock = pg.time.Clock()
 time_delay = 1000
@@ -214,13 +214,13 @@ player = Player()
 # Add player to all sprites group
 all_sprites.add(player)
 
-for i in range(20): # This line creates however many mobs we want to make
+for i in range(10): # This line creates however many mobs we want to make
     m = Mob(randint(0,WIDTH), randint(0,HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2)) 
     all_sprites.add(m)
     mobs.add(m)
 print(mobs)
 
-for i in range(10): # This line creates however many mobs we want to make
+for i in range(15): # This line creates however many mobs we want to make
     bg = DeathBlock(randint(0,WIDTH), randint(0,HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2)) 
     all_sprites.add(bg)
     all_badguys.add(bg)
