@@ -5,59 +5,46 @@ SOURCES:
 Table 0
 https://coderslegacy.com/python/pygame-platformer-game/ (for the screen-looping mechanic)
 https://stackoverflow.com/questions/30720665/countdown-timer-in-pygame (for my timer)
+https://stackoverflow.com/questions/5055042/whats-the-best-practice-using-a-settings-file-in-python (for settings)
+https://gist.github.com/ogilviemt/9b05a89d023054e6279f (for the starfield background)
+
 '''
 
 ########################################################################################################################
 
 '''
 THE GOALS OF THE GAME:
-
 To have 2 classes: one for the player and a basic mob.
-
 To have a time limit and a score counter, so that when the time ends the game tells you your score.
-
 To use random to make it so that the mobs spawn in random points (and in random colors/trajectories) across the screen and to code a way to make sure the
 player doesn't go off the screen.
-
 '''
 
 ########################################################################################################################
 
 # This is where we import our libraries and modules.
-import pygame as pg # This makes it so that whenever we reference pygame in the code below, we only have to write 'pg' 
+import pygame as pg # This makes it so that whenever we reference pygame in the code below, we only have to write 'pg'
+
+from assets import settings as sett
+
+from player import Player
+
+from mob import Mob
+
+from deathblock import DeathBlock
+
 # rather than 'pygame'.
 from pygame.sprite import Sprite
+
 import os
+
 from random import randint, random
 
 ########################################################################################################################
 
-vec = pg.math.Vector2
-
-# Setting up asset folders here
-game_folder = os.path.dirname(__file__)
-img_folder = os.path.join(game_folder, 'images')
-
-########################################################################################################################
-
-# Our settings go here (another python convention is all caps for global variables).  Change 'WIDTH' and 'HEIGHT'
-# variables to make the screen less/more wide or high.
-WIDTH = 1000
-HEIGHT = 800
-FPS = 30
-
-# player settings
-PLAYER_FRIC = -.75
-PLAYER_GRAV = 0
-POINTS = 0
-TIME = 60
-
-# Next, we define colors (with RGB values of course).  Also, these colors are global so we write them in all caps.
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+# local variables
+time_remaining = 60
+point_score = 0
 
 ########################################################################################################################
 
@@ -72,126 +59,31 @@ def draw_text(text, size, color, x, y):
 
 ########################################################################################################################
 
-# This class is for the player, the big green block
-class Player(Sprite):
-    def __init__(self):
-        Sprite.__init__(self)
-        self.image = pg.Surface((50, 50))
-        self.image.fill(WHITE)
-        self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH/2, HEIGHT/2) 
-        self.pos = vec(WIDTH/2, HEIGHT/2) # Position
-        self.vel = vec(0,0)
-        self.acc = vec(0,0)
-        print(self.rect.center)
-    def controls(self):
-        keys = pg.key.get_pressed() # This is saying "Hey, a key has been pressed".  The lines under define how when we press a certain button, a coorelating action happens
-        if keys[pg.K_a]:
-            self.acc.x = -5
-        if keys[pg.K_d]:
-            self.acc.x = 5
-        if keys[pg.K_w]:
-            self.acc.y = -5
-        if keys[pg.K_s]:
-            self.acc.y = 5
+star_field_slow = []
+star_field_medium = []
+star_field_fast = []
 
-# these lines make it so that the player teleports to the other side of the screen if they run into the screen borders
-        if self.pos.x > WIDTH:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = WIDTH
+for slow_stars in range(30):
+    star_loc_x = randint(0, sett.WIDTH)
+    star_loc_y = randint(0, sett.HEIGHT)
+    star_field_slow.append([star_loc_x, star_loc_y])
 
-        if self.pos.y > HEIGHT:
-            self.pos.y = 0
-        if self.pos.y < 0:
-            self.pos.y = HEIGHT
+for medium_stars in range(20):
+    star_loc_x = randint(0, sett.WIDTH)
+    star_loc_y = randint(0, sett.HEIGHT)
+    star_field_medium.append([star_loc_x, star_loc_y])
 
-    def update(self):
-        self.acc = vec(0, PLAYER_GRAV)
-        self.controls()
-
-# makes the controls and their speeed work the way they do
-        self.acc.x += self.vel.x * PLAYER_FRIC
-        self.acc.y += self.vel.y * PLAYER_FRIC
-        self.vel += self.acc
-        self.pos += self.vel + 0.5 * self.acc
-        self.rect.center = self.pos
-
-########################################################################################################################
-
-# This class creates mobs, the little guys that the player has to eat(?) up to get points
-class Mob(Sprite):
-     def __init__(self, x, y, color, velocityX, velocityY):
-        Sprite.__init__(self)
-        self.image = pg.Surface((25,25))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.vel = vec(velocityX, velocityY)
-        self.pos = vec(x, y)
-
-     def update(self):
-        self.rect.x += self.vel.x
-        self.rect.y += self.vel.y
-
-        self.pos.x = self.rect.x
-        self.pos.y = self.rect.y
-
-# Same with player on line 98
-        if self.pos.x > WIDTH:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = WIDTH
-
-        if self.pos.y > HEIGHT:
-            self.pos.y = 0
-        if self.pos.y < 0:
-            self.pos.y = HEIGHT
-
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
-        
-########################################################################################################################
-
-class DeathBlock(Sprite):
-    def __init__(self, x, y, color, velocityX, velocityY):
-        Sprite.__init__(self)
-        self.image = pg.Surface((25,25))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.vel = vec(velocityX, velocityY)
-        self.pos = vec(x, y)
-
-    def update(self):
-        self.rect.x += self.vel.x
-        self.rect.y += self.vel.y
-
-        self.pos.x = self.rect.x
-        self.pos.y = self.rect.y
-
-# Same with player on line 98
-        if self.pos.x > WIDTH:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = WIDTH
-
-        if self.pos.y > HEIGHT:
-            self.pos.y = 0
-        if self.pos.y < 0:
-            self.pos.y = HEIGHT
-
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
+for fast_stars in range(10):
+    star_loc_x = randint(0, sett.WIDTH)
+    star_loc_y = randint(0, sett.HEIGHT)
+    star_field_fast.append([star_loc_x, star_loc_y])
 
 ########################################################################################################################
 
 # And here we intialize the window that we will see the code in.
 pg.init() # This line means to, in more human terms, intitialize pygame
 pg.mixer.init()
-screen = pg.display.set_mode((WIDTH, HEIGHT))
+screen = pg.display.set_mode((sett.WIDTH, sett.HEIGHT))
 pg.display.set_caption("60-Second Dash!") # This makes the tab name whatever you want it to be
 
 clock = pg.time.Clock()
@@ -214,14 +106,14 @@ player = Player()
 # Add player to all sprites group
 all_sprites.add(player)
 
-for i in range(10): # This line creates however many mobs we want to make
-    m = Mob(randint(0,WIDTH), randint(0,HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2)) 
+for i in range(sett.MOB_COUNT): # This line creates however many mobs we want to make
+    m = Mob(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2))
     all_sprites.add(m)
     mobs.add(m)
 print(mobs)
 
-for i in range(15): # This line creates however many mobs we want to make
-    bg = DeathBlock(randint(0,WIDTH), randint(0,HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2)) 
+for i in range(sett.DEATH_BLOCK_COUNT): # This line creates however many mobs we want to make
+    bg = DeathBlock(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2))
     all_sprites.add(bg)
     all_badguys.add(bg)
 print(all_badguys)
@@ -232,61 +124,85 @@ print(all_badguys)
 running = True
 while running:
     # This following line keeps the loop, well, looping using the clock.
-    clock.tick(FPS)
+    clock.tick(sett.FPS)
     # This 'for' loop checks to see if the user pressed the red 'x' on the window.
     for event in pg.event.get():
         if event.type == pg.QUIT:
-            # Line 34 will break the loop, as the action being performed by the user (pressing the red 'x') will end the 
-            # program, and therefore the loop. 
+            # Line 34 will break the loop, as the action being performed by the user (pressing the red 'x') will end the
+            # program, and therefore the loop.
             running = False
         elif event.type == timer_event:
-            if TIME > 0:
-                TIME -= 1
-            if TIME == 0:
+            if time_remaining > 0:
+                time_remaining -= 1
+            if time_remaining == 0:
                 all_sprites.empty()
                 all_badguys.empty()
-                
+
 ########################################################################################################################
 
     ############### Update ###############
 
     # Updates all sprites
+
     all_sprites.update()
 
     mobhits = pg.sprite.spritecollide(player, mobs, True)
     if mobhits:
-        POINTS += 1
+        point_score += 1
     all_sprites.update()
 
     dbhits = pg.sprite.spritecollide(player, all_badguys, True)
     if dbhits:
-        TIME = 0
+        time_remaining = 0
     all_sprites.update()
 
     if mobhits:
-        m = Mob(randint(0,WIDTH), randint(0,HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2)) 
+        m = Mob(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2))
         all_sprites.add(m)
         mobs.add(m)
 
     if dbhits:
-        bg = DeathBlock(randint(0,WIDTH), randint(0,HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2)) 
+        bg = DeathBlock(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2))
         all_sprites.add(bg)
         all_badguys.add(bg)
 
     ############### Draw ###############
 
         # Draws the background screen
-    screen.fill(BLACK)
+    screen.fill(sett.BLACK)
 
-    draw_text("POINTS: " + str(POINTS) + "   " + "TIME: " + str(TIME), 22, WHITE, WIDTH / 2, HEIGHT / 24)
-    if TIME <= 0:
-          draw_text("GAME OVER!", 50, WHITE, WIDTH / 2, HEIGHT / 2)
+    draw_text("POINTS: " + str(point_score) + "   " + "TIME: " + str(time_remaining), 22, sett.WHITE, sett.WIDTH / 2, sett.HEIGHT / 24)
+    if time_remaining <= 0:
+          draw_text("GAME OVER!", 50, sett.WHITE, sett.WIDTH / 2, sett.HEIGHT / 2)
+          draw_text("Your point count was: "+ str(point_score) + "!", 40, sett.WHITE, sett.WIDTH / 2, sett.HEIGHT / 1.75)
         # Draws all sprites
     all_sprites.draw(screen)
     all_badguys.draw(screen)
 
-    # This is a buffer that makes it so after the code has drawn everything, the display will be flipped; updated is a better way to put it (think 'flip' as in 'flipbook'). 
-    pg.display.flip() # This will flip the displays.
+    # This is the code that draws the moving stars in the background
+    for star in star_field_slow:
+        star[1] += 1
+        if star[1] > sett.HEIGHT:
+            star[0] = randint(0, sett.WIDTH)
+            star[1] = randint(-20, -5)
+        pg.draw.circle(screen, sett.DARK_GREY, star, 3)
 
+    for star in star_field_medium:
+        star[1] += 2
+        if star[1] > sett.HEIGHT:
+            star[0] = randint(0, sett.WIDTH)
+            star[1] = randint(-20, -5)
+        pg.draw.circle(screen, sett.LIGHT_GREY, star, 2)
+
+    for star in star_field_fast:
+        star[1] += 3
+        if star[1] > sett.HEIGHT:
+            star[0] = randint(0, sett.WIDTH)
+            star[1] = randint(-20, -5)
+        pg.draw.circle(screen, sett.YELLOW, star, 1)
+
+    # This is a buffer that makes it so after the code has drawn everything, the display will be flipped; updated is a better way to put it (think 'flip' as in 'flipbook').
+    pg.display.flip() # This will flip the displays.
 pg.quit()
+
 ########################################################################################################################
