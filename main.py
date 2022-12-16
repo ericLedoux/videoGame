@@ -24,20 +24,12 @@ player doesn't go off the screen.
 
 # This is where we import our libraries and modules.
 import pygame as pg # This makes it so that whenever we reference pygame in the code below, we only have to write 'pg'
-
 from assets import settings as sett
-
 from player import Player
-
 from mob import Mob
-
 from deathblock import DeathBlock
-
-# rather than 'pygame'.
 from pygame.sprite import Sprite
-
 import os
-
 from random import randint, random
 
 ########################################################################################################################
@@ -48,7 +40,7 @@ point_score = 0
 
 ########################################################################################################################
 
-# These lines of code are a class for creating words that you can see on screen
+# These lines of code are a functon that creates words that you can see on screen
 def draw_text(text, size, color, x, y):
         font_name = pg.font.match_font('comic sans')
         font = pg.font.Font(font_name, size)
@@ -59,10 +51,13 @@ def draw_text(text, size, color, x, y):
 
 ########################################################################################################################
 
+# These create the arrays for the stars seen in the animated starfield
 star_field_slow = []
 star_field_medium = []
 star_field_fast = []
 
+# the number in the () makes it so there are 30 slow stars in the background, and the next 2 create a random spot where the star
+# will spawn.  This is the same in the other 2 for loops below this one
 for slow_stars in range(30):
     star_loc_x = randint(0, sett.WIDTH)
     star_loc_y = randint(0, sett.HEIGHT)
@@ -86,6 +81,7 @@ pg.mixer.init()
 screen = pg.display.set_mode((sett.WIDTH, sett.HEIGHT))
 pg.display.set_caption("60-Second Dash!") # This makes the tab name whatever you want it to be
 
+# This sets up the clock so that the game can be on a timer
 clock = pg.time.Clock()
 time_delay = 1000
 timer_event = pg.USEREVENT+1
@@ -98,7 +94,7 @@ all_badguys = pg.sprite.Group()
 
 ########################################################################################################################
 
-# Instanciate (instance: an object that belongs to a class) the player and death block
+# Instanciates (instance: an object that belongs to a class) the player
 player = Player()
 
 ########################################################################################################################
@@ -107,12 +103,14 @@ player = Player()
 all_sprites.add(player)
 
 for i in range(sett.MOB_COUNT): # This line creates however many mobs we want to make
+    # This line makes it so the speed, position, and direction of the mobs is random
     m = Mob(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2))
     all_sprites.add(m)
     mobs.add(m)
 print(mobs)
 
-for i in range(sett.DEATH_BLOCK_COUNT): # This line creates however many mobs we want to make
+for i in range(sett.DEATH_BLOCK_COUNT): # This line creates however many death blocks we want to make
+    # Same with Mob, this randomizes death block stats
     bg = DeathBlock(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2))
     all_sprites.add(bg)
     all_badguys.add(bg)
@@ -128,12 +126,13 @@ while running:
     # This 'for' loop checks to see if the user pressed the red 'x' on the window.
     for event in pg.event.get():
         if event.type == pg.QUIT:
-            # Line 34 will break the loop, as the action being performed by the user (pressing the red 'x') will end the
+            # The line above will break the loop, as the action being performed by the user (pressing the red 'x') will end the
             # program, and therefore the loop.
             running = False
         elif event.type == timer_event:
             if time_remaining > 0:
                 time_remaining -= 1
+            # If time hits 0, the game ends
             if time_remaining == 0:
                 all_sprites.empty()
                 all_badguys.empty()
@@ -146,21 +145,25 @@ while running:
 
     all_sprites.update()
 
+# If the player collides with a mob, they get a point
     mobhits = pg.sprite.spritecollide(player, mobs, True)
     if mobhits:
         point_score += 1
     all_sprites.update()
 
+# If the player collides with a death block, they lose a point
     dbhits = pg.sprite.spritecollide(player, all_badguys, True)
     if dbhits:
         time_remaining = 0
     all_sprites.update()
 
+# If the player collides with a mob, it dissapears and a new one takes its place in a random spot
     if mobhits:
         m = Mob(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((0), (255) , (0)), randint(-2,2), randint(-2,2))
         all_sprites.add(m)
         mobs.add(m)
 
+# If the player collides with a death block, it dissapears and a new one takes its place in a random spot (though the game ends so fast that its hard to spot)
     if dbhits:
         bg = DeathBlock(randint(0,sett.WIDTH), randint(0,sett.HEIGHT), ((255), (0) , (0)), randint(-2,2), randint(-2,2))
         all_sprites.add(bg)
@@ -171,6 +174,7 @@ while running:
         # Draws the background screen
     screen.fill(sett.BLACK)
 
+# Draws all the text that appears after the game is over, telling you your stats
     draw_text("POINTS: " + str(point_score) + "   " + "TIME: " + str(time_remaining), 22, sett.WHITE, sett.WIDTH / 2, sett.HEIGHT / 24)
     if time_remaining <= 0:
           draw_text("GAME OVER!", 50, sett.WHITE, sett.WIDTH / 2, sett.HEIGHT / 2)
@@ -181,6 +185,7 @@ while running:
 
     # This is the code that draws the moving stars in the background
     for star in star_field_slow:
+        # This line determines the speed of the stars
         star[1] += 1
         if star[1] > sett.HEIGHT:
             star[0] = randint(0, sett.WIDTH)
